@@ -38,13 +38,17 @@ Implementar e comparar o desempenho de quatro tipos de agentes racionais em um a
 
 ```
 agentesIA/
-├── environment.py      # Classe do ambiente simulado
-├── agent_base.py       # Classe base e agentes reativo/modelo
-├── agents.py          # Agentes baseados em objetivos/utilidade/BDI
-├── simulador.py       # Sistema de simulação e comparação
-├── main.py           # Programa principal com interface
-├── requirements.txt   # Dependências do projeto
-└── README.md         # Este arquivo
+├── environment.py         # Classe do ambiente simulado (versão original)
+├── agent_base.py          # Classe base e agentes reativo/modelo
+├── agents.py             # Agentes baseados em objetivos/utilidade/BDI
+├── simulador.py          # Sistema de simulação e comparação
+├── main.py              # Programa principal (versão terminal)
+├── mesa_environment.py   # Ambiente Mesa com visualização
+├── mesa_visualization.py # Visualização gráfica Mesa
+├── mesa_simple.py       # Versão Mesa simplificada (recomendada)
+├── main_mesa_simple.py  # Programa principal Mesa
+├── requirements.txt      # Dependências do projeto
+└── README.md            # Este arquivo
 ```
 
 ## Como Usar
@@ -57,8 +61,19 @@ pip install -r requirements.txt
 
 ### 2. Executar o Programa
 
+**Versão Original (Terminal):**
 ```bash
 python main.py
+```
+
+**Versão Mesa Simplificada (Recomendada):**
+```bash
+python main_mesa_simple.py
+```
+
+**Comparação rápida via linha de comando:**
+```bash
+python mesa_simple.py compare 5
 ```
 
 ### 3. Opções Disponíveis
