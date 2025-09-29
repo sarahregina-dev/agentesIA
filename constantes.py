@@ -1,0 +1,23 @@
+# Configurações do ambiente
+GRID_WIDTH = 5
+GRID_HEIGHT = 5
+WINDOW_WIDTH = GRID_WIDTH * 1
+WINDOW_HEIGHT = GRID_HEIGHT * 1
+FPS = 15
+
+# Cores
+BLUE = (0, 0, 255)
+PINK = (255, 105, 180)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+ORANGE = (255, 140, 0)
+
+BLACK = (0, 0, 0)
+PURPLE = (75, 0, 130)
+EARTH = (139,69,19)
+MOSS_GREEN = (220,220,220)
+
+CYAN = (0, 255, 255)
+GREY = (192, 192, 192)
+BROWN = (139, 69, 19)
