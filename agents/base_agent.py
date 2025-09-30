@@ -13,7 +13,7 @@ class BaseAgent(ABC):
         self.y = y
         self.grid = grid
         self.obstacles = obstacles
-        self.bateria = 100
+        self.bateria = 30
         self.pontuacao = 0
         self.executando = True
         self.historico_posicoes = [(x, y)]
@@ -28,10 +28,16 @@ class BaseAgent(ABC):
             self.agir()
             
             # Consome bateria
-            self.bateria -= 1
+            # self.bateria -= 1
             
             # Timeout para próxima ação
             yield self.ambiente.timeout(1)
+    
+    def parar(self):
+        """Para o agente e encerra sua execução"""
+        self.executando = False
+        print(f"Agente {self.nome} foi parado por falta de ações")
+            
     
     @abstractmethod
     def agir(self):
@@ -50,16 +56,21 @@ class BaseAgent(ABC):
                 self.x = novo_x
                 self.y = novo_y
                 self.historico_posicoes.append((self.x, self.y))
+                self.bateria -= 1
                 return True
         return False
     
     def aspirar(self):
         """Aspira a sujeira na posição atual"""
         if self.grid[self.y][self.x] > 0:
-            valor_sujeira = self.grid[self.y][self.x]
-            self.pontuacao += valor_sujeira
-            self.grid[self.y][self.x] = 0
-            return True
+            if self.bateria > 2:
+                valor_sujeira = self.grid[self.y][self.x]
+                self.pontuacao += valor_sujeira
+                self.grid[self.y][self.x] = 0
+                self.bateria -= 2
+                return True
+            else:
+                self.parar()
         return False
     
     def desenhar(self, tela):
@@ -90,8 +101,8 @@ class BaseAgent(ABC):
         """Retorna a letra identificadora do agente"""
         pass
     
-    def distancia_manhattan(self, x1, y1, x2, y2):
-        """Calcula distância de Manhattan entre duas posições"""
+    def distancia(self, x1, y1, x2, y2):
+        """Calcula distância absoluta (Manhattan) entre duas posições"""
         return abs(x1 - x2) + abs(y1 - y2)
     
     def encontrar_sujeira_mais_proxima(self):
@@ -100,7 +111,7 @@ class BaseAgent(ABC):
         for y in range(5):
             for x in range(5):
                 if self.grid[y][x] > 0:
-                    distancia = self.distancia_manhattan(self.x, self.y, x, y)
+                    distancia = self.distancia(self.x, self.y, x, y)
                     sujeiras.append((x, y, self.grid[y][x], distancia))
         
         if sujeiras:

@@ -15,7 +15,8 @@ def gerar_ambiente():
     obstacles = []
     
     # Gera obstáculos (3-5 móveis)
-    num_obstacles = random.randint(3, 5)
+    # num_obstacles = random.randint(3, 4)
+    num_obstacles = 0
     for _ in range(num_obstacles):
         while True:
             x = random.randint(0, 4)
@@ -25,8 +26,12 @@ def gerar_ambiente():
                 obstacles.append((x, y))
                 break
     
+                
+
+
+
     # Gera sujeiras (8-12 no total)
-    tipos_sujeira = [1, 1, 1, 2, 2, 3]  # Mais poeira, menos detritos
+    tipos_sujeira = [1, 2, 3]  # Mais poeira, menos detritos
     total_sujeiras = random.randint(8, 12)
     
     for _ in range(total_sujeiras):
@@ -36,7 +41,8 @@ def gerar_ambiente():
             if grid[y][x] == 0 and (x, y) not in obstacles:
                 grid[y][x] = random.choice(tipos_sujeira)
                 break
-    
+    grid[2][3] = 3
+    grid[3][2] = 2
     return grid, obstacles
 
 def mostrar_tela_inicial(tela):
@@ -131,6 +137,10 @@ def mostrar_tela_resultado(tela, agentes):
             elif evento.type == pygame.MOUSEBUTTONDOWN and botao_rect.collidepoint(evento.pos):
                 main()
                 return
+
+def parar_agente(agente):
+    """Para um agente específico"""
+    agente.parar()
 
 def desenhar_ambiente(tela, grid, obstacles, agentes):
     """Desenha o ambiente completo"""
@@ -234,14 +244,14 @@ def main():
     # Criação dos agentes (todos começam na posição 2,2 - centro)
     pos_inicial_x, pos_inicial_y = 2, 2
     
-    agente_simples = SimpleAgent("Simples", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
-    agente_modelo = ModelBasedAgent("Modelo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
-    agente_objetivo = GoalBasedAgent("Objetivo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    # agente_simples = SimpleAgent("Simples", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    # agente_modelo = ModelBasedAgent("Modelo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    # agente_objetivo = GoalBasedAgent("Objetivo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
     agente_utilidade = UtilityBasedAgent("Utilidade", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
-    agente_bdi = AgenteBDI("BDI", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    # agente_bdi = AgenteBDI("BDI", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
     
     # Lista de todos os agentes
-    agentes = [agente_simples, agente_modelo, agente_objetivo, agente_utilidade, agente_bdi]
+    agentes = [agente_utilidade]
     
     # Configurações da simulação
     rodando = True

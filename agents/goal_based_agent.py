@@ -6,72 +6,100 @@ class GoalBasedAgent(BaseAgent):
     
     def __init__(self, nome, ambiente, x, y, grid, obstacles):
         super().__init__(nome, ambiente, x, y, grid, obstacles)
-        self.objetivo_atual = None
-        self.plano = []
-        self.estado_objetivo = "buscar_sujeira"  # buscar_sujeira, ir_para_sujeira, aspirar
+        # Modelo interno do ambiente
+        self.modelo_grid = [[0 for _ in range(5)] for _ in range(5)]
+        self.modelo_obstacles = obstacles.copy()
+        self.ultima_acao = None
+        # Rastreamento de casas visitadas
+        self.casas_visitadas = set()
+        self.casas_visitadas.add((x, y))  # Marca posição inicial como visitada
     
     def agir(self):
-        """Lógica do agente baseado em objetivos"""
+        """Lógica do agente baseado em modelo com priorização de casas não visitadas"""
+        # Atualiza modelo com informações da posição atual
+        self.atualizar_modelo()
+        
+        # Marca posição atual como visitada
+        self.casas_visitadas.add((self.x, self.y))
+        
         # Primeiro tenta aspirar na posição atual
         if self.aspirar():
-            self.estado_objetivo = "buscar_sujeira"
+            self.ultima_acao = "aspirar"
             return
         
-        # Define objetivo se não tem um
-        if self.estado_objetivo == "buscar_sujeira":
-            self.definir_objetivo()
-        
-        # Executa o plano para alcançar o objetivo
-        if self.estado_objetivo == "ir_para_sujeira" and self.objetivo_atual:
-            self.executar_plano()
-    
-    def definir_objetivo(self):
-        """Define um novo objetivo (sujeira mais próxima)"""
+        # Procura sujeira no modelo local
         sujeira_proxima = self.encontrar_sujeira_mais_proxima()
         if sujeira_proxima:
-            x_dest, y_dest, valor, distancia = sujeira_proxima
-            self.objetivo_atual = (x_dest, y_dest, valor)
-            self.estado_objetivo = "ir_para_sujeira"
-            self.criar_plano(x_dest, y_dest)
-        else:
-            # Se não há sujeira, explora aleatoriamente
-            self.estado_objetivo = "explorar"
-    
-    def criar_plano(self, x_destino, y_destino):
-        """Cria um plano simples para chegar ao destino"""
-        self.plano = []
-        x_atual, y_atual = self.x, self.y
+            x_dest, y_dest, _, _ = sujeira_proxima
+            dx, dy = self.caminho_para_posicao(x_dest, y_dest)
+            if self.mover(dx, dy):
+                self.ultima_acao = "mover_para_sujeira"
+                return
         
-        # Plano simples: move horizontalmente primeiro, depois verticalmente
-        while x_atual != x_destino:
-            if x_atual < x_destino:
-                self.plano.append((1, 0))  # Direita
-                x_atual += 1
-            else:
-                self.plano.append((-1, 0))  # Esquerda
-                x_atual -= 1
+        # Prioriza casas não visitadas
+        casa_nao_visitada = self.encontrar_casa_nao_visitada()
+        if casa_nao_visitada:
+            x_dest, y_dest = casa_nao_visitada
+            dx, dy = self.caminho_para_posicao(x_dest, y_dest)
+            if self.mover(dx, dy):
+                self.ultima_acao = "explorar_nao_visitada"
+                return
         
-        while y_atual != y_destino:
-            if y_atual < y_destino:
-                self.plano.append((0, 1))  # Baixo
-                y_atual += 1
-            else:
-                self.plano.append((0, -1))  # Cima
-                y_atual -= 1
+        # Se não encontrou casa não visitada, move aleatoriamente
+        movimentos = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        dx, dy = random.choice(movimentos)
+        
+        if self.mover(dx, dy):
+            self.ultima_acao = "explorar_aleatorio"
+            return
     
-    def executar_plano(self):
-        """Executa o próximo passo do plano"""
-        if self.plano:
-            dx, dy = self.plano.pop(0)
-            if not self.mover(dx, dy):
-                # Se não conseguiu mover, recria o plano
-                if self.objetivo_atual:
-                    x_dest, y_dest, _ = self.objetivo_atual
-                    self.criar_plano(x_dest, y_dest)
-        else:
-            # Plano concluído, volta a buscar sujeira
-            self.estado_objetivo = "buscar_sujeira"
-            self.objetivo_atual = None
+    def atualizar_modelo(self):
+        """Atualiza o modelo interno com informações atuais"""
+        # Atualiza a posição atual no modelo
+        self.modelo_grid[self.y][self.x] = self.grid[self.y][self.x]
+        
+        # Observa apenas as 4 casas imediatamente próximas (norte, sul, leste, oeste)
+        movimentos_vizinhos = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # norte, sul, leste, oeste
+        for dx, dy in movimentos_vizinhos:
+            novo_x = self.x + dx
+            novo_y = self.y + dy
+            if 0 <= novo_x < 5 and 0 <= novo_y < 5:
+                self.modelo_grid[novo_y][novo_x] = self.grid[novo_y][novo_x]
+    
+    def encontrar_sujeira_mais_proxima(self):
+        """Encontra a sujeira mais próxima no modelo_grid (todo o grid conhecido pelo agente)"""
+        sujeiras = []
+        for y in range(5):
+            for x in range(5):
+                if self.modelo_grid[y][x] > 0:
+                    distancia = self.distancia(self.x, self.y, x, y)
+                    sujeiras.append((x, y, self.modelo_grid[y][x], distancia))
+        if sujeiras:
+            sujeiras.sort(key=lambda s: s[3])
+            if len(sujeiras) > 1:
+                sujeiras.sort(key=lambda s: s[2], reverse=True)
+                return sujeiras[0]
+            return sujeiras[0]
+        return None
+    
+    def encontrar_casa_nao_visitada(self):
+        """Encontra a casa não visitada mais próxima"""
+        casas_nao_visitadas = []
+        
+        # Procura em todo o grid por casas não visitadas
+        for y in range(5):
+            for x in range(5):
+                if (x, y) not in self.casas_visitadas and (x, y) not in self.obstacles:
+                    distancia = self.distancia(self.x, self.y, x, y)
+                    casas_nao_visitadas.append((x, y, distancia))
+        
+        if casas_nao_visitadas:
+            # Ordena por distância (mais próxima primeiro)
+            casas_nao_visitadas.sort(key=lambda casa: casa[2])
+            return (casas_nao_visitadas[0][0], casas_nao_visitadas[0][1])
+        
+        return None
+    
     
     def get_cor(self):
         return (255, 165, 0)  # Laranja
