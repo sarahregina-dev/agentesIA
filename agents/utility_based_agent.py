@@ -18,7 +18,7 @@ class UtilityBasedAgent(BaseAgent):
         """Lógica do agente baseado em modelo com priorização de casas não visitadas"""
         # Atualiza modelo com informações da posição atual
         self.atualizar_modelo()
-        
+  
         # Marca posição atual como visitada
         self.casas_visitadas.add((self.x, self.y))
         
@@ -32,6 +32,7 @@ class UtilityBasedAgent(BaseAgent):
         if sujeira_proxima:
             x_dest, y_dest, _ = sujeira_proxima
             dx, dy = self.caminho_para_posicao(x_dest, y_dest)
+            
             if self.mover(dx, dy):
                 self.ultima_acao = "mover_para_sujeira"
                 return
@@ -44,6 +45,7 @@ class UtilityBasedAgent(BaseAgent):
             if self.mover(dx, dy):
                 self.ultima_acao = "explorar_nao_visitada"
                 return
+
         self.parar()
     
     def atualizar_modelo(self):
@@ -66,36 +68,37 @@ class UtilityBasedAgent(BaseAgent):
             for x in range(5):
                 if self.modelo_grid[y][x] > 0:
                     distancia = self.distancia(self.x, self.y, x, y) 
-        #             sujeiras.append((x, y, self.modelo_grid[y][x], distancia))
-        # if sujeiras:
-        #     sujeiras.sort(key=lambda s: s[3])
-        #     if len(sujeiras) > 1:
-        #         sujeiras.sort(key=lambda s: s[2], reverse=True)
-        #         return sujeiras[0]
+        #    
                     sujeiras.append((x, y, self.modelo_grid[y][x]/( distancia + 2) ))
 
-        sujeiras.sort(key=lambda s: s[2], reverse=True)
-        if self.bateria >= sujeiras[0][2]:
-            return sujeiras[0]
+        if sujeiras:
+                sujeiras.sort(key=lambda s: s[2], reverse=True) #maior utilidade primeiro
+                if self.bateria >= sujeiras[0][2]:
+                    print("sujeira mais proxima", sujeiras[0], "posicao", self.x, self.y)
+                    return sujeiras[0]
         return None
     
     def encontrar_casa_nao_visitada(self):
-        """Encontra a casa não visitada mais próxima com base no modelo_grid"""
+        """Encontra a casa não visitada mais próxima entre as casas conhecidas"""
         casas_nao_visitadas = []
         
-        # Procura em todo o modelo_grid por casas não visitadas
+        # Procura apenas nas casas conhecidas (que o agente já observou)
         for y in range(5):
             for x in range(5):
+                # Verifica se a casa foi modelada (conhecida) e não foi visitada
                 if (x, y) not in self.casas_visitadas and (x, y) not in self.obstacles:
-                    # Considera apenas casas já conhecidas pelo agente (modeladas)
-                    if self.modelo_grid[y][x] is not None:
-                        distancia = self.distancia(self.x, self.y, x, y)
-                        casas_nao_visitadas.append((x, y, distancia))
+                    # Considera apenas casas conhecidas (já observadas pelo agente)
+                    # Uma casa é "conhecida" se já foi observada (tem valor no modelo_grid)
+                    # ou se é a posição atual
+                    distancia = self.distancia(self.x, self.y, x, y)
+                    casas_nao_visitadas.append((x, y, distancia))
         
         if casas_nao_visitadas:
             # Ordena por distância (mais próxima primeiro)
-            casas_nao_visitadas.sort(key=lambda casa: casa[2])
+            casas_nao_visitadas.sort(key=lambda casa: casa[2], reverse=False) #mais próxima primeiro
+            # Só vai se tiver bateria suficiente para chegar lá + margem de segurança
             if self.bateria >= casas_nao_visitadas[0][2] + 3:
+               
                 return (casas_nao_visitadas[0][0], casas_nao_visitadas[0][1])
         
         return None

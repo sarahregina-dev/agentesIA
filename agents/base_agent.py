@@ -60,7 +60,7 @@ class BaseAgent(ABC):
                 return True
         return False
     
-    def aspirar(self):
+    def aspirar(self, model_grid = None):
         """Aspira a sujeira na posição atual"""
         if self.grid[self.y][self.x] > 0:
             if self.bateria > 2:
@@ -117,6 +117,7 @@ class BaseAgent(ABC):
         if sujeiras:
             # Ordena por distância
             sujeiras.sort(key=lambda s: s[3])
+           
             return sujeiras[0]
         return None
     

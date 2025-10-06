@@ -16,7 +16,7 @@ def gerar_ambiente():
     
     # Gera obstáculos (3-5 móveis)
     # num_obstacles = random.randint(3, 4)
-    num_obstacles = 0
+    num_obstacles = 3
     for _ in range(num_obstacles):
         while True:
             x = random.randint(0, 4)
@@ -41,8 +41,8 @@ def gerar_ambiente():
             if grid[y][x] == 0 and (x, y) not in obstacles:
                 grid[y][x] = random.choice(tipos_sujeira)
                 break
-    grid[2][3] = 3
-    grid[3][2] = 2
+    # grid[2][3] = 3
+    # grid[3][2] = 2
     return grid, obstacles
 
 def mostrar_tela_inicial(tela):
