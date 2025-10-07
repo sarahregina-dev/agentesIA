@@ -8,7 +8,8 @@ class ModelBasedAgent(BaseAgent):
         super().__init__(nome, ambiente, x, y, grid, obstacles)
         # Modelo interno do ambiente
         self.modelo_grid = [[0 for _ in range(5)] for _ in range(5)]
-        self.modelo_obstacles = obstacles.copy()
+        self.modelo_obstacles = []
+        self.obstacles = obstacles
         self.ultima_acao = None
         # Rastreamento de casas visitadas
         self.casas_visitadas = set()
@@ -63,6 +64,8 @@ class ModelBasedAgent(BaseAgent):
         for dx, dy in movimentos_vizinhos:
             novo_x = self.x + dx
             novo_y = self.y + dy
+            if (novo_x, novo_y) in self.obstacles:
+                self.modelo_obstacles.append((novo_x, novo_y))
             if 0 <= novo_x < 5 and 0 <= novo_y < 5:
                 self.modelo_grid[novo_y][novo_x] = self.grid[novo_y][novo_x]
     
@@ -87,7 +90,7 @@ class ModelBasedAgent(BaseAgent):
         # Procura em todo o grid por casas não visitadas
         for y in range(5):
             for x in range(5):
-                if (x, y) not in self.casas_visitadas and (x, y) not in self.obstacles:
+                if (x, y) not in self.casas_visitadas and (x, y) not in self.modelo_obstacles:
                     distancia = self.distancia(self.x, self.y, x, y)
                     casas_nao_visitadas.append((x, y, distancia))
         

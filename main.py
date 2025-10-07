@@ -24,6 +24,7 @@ def gerar_ambiente():
             # Não coloca obstáculos nas bordas para facilitar movimento
             if (x, y) not in obstacles and (x != 2 or y != 2):
                 obstacles.append((x, y))
+                grid[y][x] = -1
                 break
     
                 
