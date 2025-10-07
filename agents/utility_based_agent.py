@@ -30,7 +30,7 @@ class UtilityBasedAgent(BaseAgent):
         # Procura sujeira no modelo local
         sujeira_proxima = self.encontrar_sujeira_mais_proxima()
         if sujeira_proxima:
-            x_dest, y_dest, _ = sujeira_proxima
+            x_dest, y_dest, _, _ = sujeira_proxima
             dx, dy = self.caminho_para_posicao(x_dest, y_dest)
             
             if self.mover(dx, dy):
@@ -47,6 +47,49 @@ class UtilityBasedAgent(BaseAgent):
                 return
 
         self.parar()
+    
+
+    def mover(self, dx, dy):
+        """
+        Move o agente para uma nova posição, contornando obstáculos se necessário.
+        Utiliza busca em largura (BFS) para encontrar o próximo passo em direção ao destino.
+        dx, dy: direção desejada (ex: (1,0) para direita)
+        """
+        from collections import deque
+
+        destino_x = self.x + dx
+        destino_y = self.y + dy
+
+        # Verifica se o destino está dentro dos limites e não é obstáculo
+        if not (0 <= destino_x < 5 and 0 <= destino_y < 5):
+            return False
+        if (destino_x, destino_y) in self.obstacles:
+            # Precisa contornar obstáculo
+            # Busca caminho até a célula destino usando BFS
+            visitados = set()
+            fila = deque()
+            fila.append((self.x, self.y, []))  # (x, y, caminho até aqui)
+
+            while fila:
+                x_atual, y_atual, caminho = fila.popleft()
+                if (x_atual, y_atual) == (destino_x, destino_y):
+                    # Encontrou caminho, executa o primeiro passo
+                    if caminho:
+                        proximo = caminho[0]
+                        return super().mover(proximo[0] - self.x, proximo[1] - self.y)
+                    else:
+                        return False  # Já está na posição
+                for dx_, dy_ in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    nx, ny = x_atual + dx_, y_atual + dy_
+                    if (0 <= nx < 5 and 0 <= ny < 5 and
+                        (nx, ny) not in self.obstacles and
+                        (nx, ny) not in visitados):
+                        visitados.add((nx, ny))
+                        fila.append((nx, ny, caminho + [(nx, ny)]))
+            return False  # Não encontrou caminho
+        else:
+            # Movimento direto possível
+            return super().mover(dx, dy)
     
     def atualizar_modelo(self):
         """Atualiza o modelo interno com informações atuais"""
@@ -69,13 +112,14 @@ class UtilityBasedAgent(BaseAgent):
                 if self.modelo_grid[y][x] > 0:
                     distancia = self.distancia(self.x, self.y, x, y) 
         #    
-                    sujeiras.append((x, y, self.modelo_grid[y][x]/( distancia + 2) ))
+                    sujeiras.append((x, y, self.modelo_grid[y][x]/( distancia + 2), distancia))
 
         if sujeiras:
                 sujeiras.sort(key=lambda s: s[2], reverse=True) #maior utilidade primeiro
-                if self.bateria >= sujeiras[0][2]:
-                    print("sujeira mais proxima", sujeiras[0], "posicao", self.x, self.y)
-                    return sujeiras[0]
+                for index, sujeira in enumerate(sujeiras):
+                    if self.bateria >= sujeiras[index][3] + 2:
+                        print("sujeira mais proxima", sujeiras[index], "posicao", self.x, self.y)
+                        return sujeiras[index]
         return None
     
     def encontrar_casa_nao_visitada(self):

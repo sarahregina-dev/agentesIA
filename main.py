@@ -247,11 +247,11 @@ def main():
     # agente_simples = SimpleAgent("Simples", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
     # agente_modelo = ModelBasedAgent("Modelo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
     # agente_objetivo = GoalBasedAgent("Objetivo", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
-    agente_utilidade = UtilityBasedAgent("Utilidade", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
-    # agente_bdi = AgenteBDI("BDI", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    # agente_utilidade = UtilityBasedAgent("Utilidade", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
+    agente_bdi = AgenteBDI("BDI", ambiente, pos_inicial_x, pos_inicial_y, grid, obstacles)
     
     # Lista de todos os agentes
-    agentes = [agente_utilidade]
+    agentes = [ agente_bdi]
     
     # Configurações da simulação
     rodando = True
