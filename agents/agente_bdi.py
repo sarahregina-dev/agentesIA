@@ -18,7 +18,8 @@ class AgenteBDI(BaseAgent):
             'mapa_conhecido': [[None for _ in range(5)] for _ in range(5)],  # O que observou
             'sujeiras_observadas': set(),  # Sujeiras que viu
             'casas_visitadas': set(),
-            'obstaculos': set(obstacles)
+            'obstaculos': set()
+
         }
         
         # DESIRES (Desejos) - sujeiras que quer limpar (ordenadas por prioridade)
@@ -57,6 +58,8 @@ class AgenteBDI(BaseAgent):
             if 0 <= nx < 5 and 0 <= ny < 5:
                 # Atualiza mapa conhecido
                 self.crencas['mapa_conhecido'][ny][nx] = self.grid[ny][nx]
+                if (nx, ny) in self.obstacles:
+                    self.crencas['obstaculos'].add((nx, ny))
                 
                 # Se observou uma sujeira, adiciona às sujeiras conhecidas
                 if self.grid[ny][nx] > 0:
@@ -134,7 +137,7 @@ class AgenteBDI(BaseAgent):
                     casas.append((x, y, dist))
         
         if casas:
-            casas.sort(key=lambda c: c[2])
+            casas.sort(key=lambda c: c[2] , reverse=False)
             if self.bateria >= casas[0][2] + 3:
                 return (casas[0][0], casas[0][1])
         
