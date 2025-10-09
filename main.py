@@ -30,10 +30,7 @@ def gerar_ambiente():
                 obstacles.append((x, y))
                 grid[y][x] = -1
                 break
-    
-                
-
-
+   
 
     # Gera sujeiras (8-12 no total)
     tipos_sujeira = [1, 2, 3]  # Mais poeira, menos detritos
