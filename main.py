@@ -2,6 +2,12 @@ import pygame
 import random
 import simpy
 import constantes
+import sys
+import io
+import os
+
+# Forçar UTF-8 no output
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 from agents.simple_agent import SimpleAgent
 from agents.model_based_agent import ModelBasedAgent
@@ -9,7 +15,7 @@ from agents.goal_based_agent import GoalBasedAgent
 from agents.utility_based_agent import UtilityBasedAgent
 from agents.agente_bdi import AgenteBDI
 
-def gerar_ambiente():
+def gerar_ambiente(): #OK
     """Gera o ambiente 5x5 com sujeiras e obstáculos"""
     grid = [[0 for _ in range(5)] for _ in range(5)]
     obstacles = []
@@ -26,10 +32,7 @@ def gerar_ambiente():
                 obstacles.append((x, y))
                 grid[y][x] = -1
                 break
-    
-                
-
-
+   
 
     # Gera sujeiras (8-12 no total)
     tipos_sujeira = [1, 2, 3]  # Mais poeira, menos detritos
@@ -48,41 +51,50 @@ def gerar_ambiente():
 
 def mostrar_tela_inicial(tela):
     """Tela inicial do simulador"""
-    fonte_titulo = pygame.font.SysFont("times", 36)
-    fonte_botao = pygame.font.SysFont("arial", 24)
+    fonte_titulo = pygame.font.SysFont("roboto", 55)
+    fonte_botao = pygame.font.SysFont("arial", 18)
     
-    titulo = fonte_titulo.render("Simulador - Robô Aspirador Inteligente", True, (255, 255, 255))
-    subtitulo = fonte_botao.render("Comparação de Agentes Racionais", True, (200, 200, 200))
+    # Quebra do título em duas linhas: 'Robô' em cima e 'Aspirador Inteligente' abaixo
+    titulo_linha1 = fonte_titulo.render("Robô Aspirador ", True, (0, 100, 255))
+    titulo_linha2 = fonte_titulo.render("Inteligente", True, (0, 100, 255))
+
     botao_rect = pygame.Rect(constantes.WINDOW_WIDTH // 2 - 100, constantes.WINDOW_HEIGHT // 2, 200, 50)
-    texto_botao = fonte_botao.render("Iniciar Simulação", True, (255, 255, 255))
+
+    # Tenta carregar o background da pasta assets/imgs
+    bg_image_path = os.path.join("assets", "imgs", "background.png")
+    bg_surface = None
+    try:
+        if os.path.exists(bg_image_path):
+            bg = pygame.image.load(bg_image_path)
+            # Escala para o tamanho da janela
+            bg_surface = pygame.transform.scale(bg, (constantes.WINDOW_WIDTH, constantes.WINDOW_HEIGHT)).convert()
+        else:
+            # tenta caminho relativo usando o diretório do arquivo (mais robusto)
+            repo_root = os.path.dirname(os.path.abspath(__file__))
+            alt_path = os.path.join(repo_root, "assets", "imgs", "background.png")
+            if os.path.exists(alt_path):
+                bg = pygame.image.load(alt_path)
+                bg_surface = pygame.transform.scale(bg, (constantes.WINDOW_WIDTH, constantes.WINDOW_HEIGHT)).convert()
+    except Exception as e:
+        print(f"Não foi possível carregar background: {e}")
 
     esperando = True
     while esperando:
-        tela.fill((50, 50, 80))  # Azul escuro
+        # Desenha o fundo (imagem se disponível, caso contrário cor sólida)
+        if bg_surface:
+            tela.blit(bg_surface, (0, 0))
+        else:
+            tela.fill((225, 225, 224))  # Azul escuro
         
-        # Título e subtítulo
-        tela.blit(titulo, (constantes.WINDOW_WIDTH // 2 - titulo.get_width() // 2, 100))
-        tela.blit(subtitulo, (constantes.WINDOW_WIDTH // 2 - subtitulo.get_width() // 2, 150))
-        
+        # Título (duas linhas) e subtítulo - centraliza cada linha
+        title_y = 80
+        tela.blit(titulo_linha1, (constantes.WINDOW_WIDTH // 2 - titulo_linha1.get_width() // 2, title_y))
+        tela.blit(titulo_linha2, (constantes.WINDOW_WIDTH // 2 - titulo_linha2.get_width() // 2, title_y + titulo_linha1.get_height() + 6))
+       
+
         # Botão
-        pygame.draw.rect(tela, (70, 130, 180), botao_rect, border_radius=10)
-        tela.blit(texto_botao, (constantes.WINDOW_WIDTH // 2 - texto_botao.get_width() // 2, 
-                               botao_rect.y + texto_botao.get_height() // 2))
-        
-        # Legenda dos agentes
-        fonte_legenda = pygame.font.SysFont("arial", 16)
-        legendas = [
-            "S - Agente Reativo Simples",
-            "M - Agente Baseado em Modelo", 
-            "G - Agente Baseado em Objetivos",
-            "U - Agente Baseado em Utilidade",
-            "B - Agente BDI"
-        ]
-        
-        for i, legenda in enumerate(legendas):
-            texto = fonte_legenda.render(legenda, True, (255, 255, 255))
-            tela.blit(texto, (50, 300 + i * 25))
-        
+        pygame.draw.rect(tela, (70, 130, 180), botao_rect, border_radius=10)    
+
         pygame.display.update()
 
         for evento in pygame.event.get():
