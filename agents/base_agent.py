@@ -73,23 +73,35 @@ class BaseAgent(ABC):
                 self.parar()
         return False
     
-    def desenhar(self, tela):
+    def desenhar(self, tela, margem=0):
         """Desenha o agente na tela"""
+        import constantes
+        
         # Determina a cor do agente
         cor = self.get_cor()
         
-        # Desenha o agente como um círculo
-        centro_x = self.x * 80 + 40
-        centro_y = self.y * 80 + 40
-        pygame.draw.circle(tela, cor, (centro_x, centro_y), 15)
+        # Calcula tamanhos proporcionais ao tamanho da célula
+        cell_size = constantes.CELL_SIZE
+        raio_agente = int(cell_size * 0.20)
+        tamanho_fonte = int(cell_size * 0.20)
         
-        # Desenha uma borda preta
-        pygame.draw.circle(tela, (0, 0, 0), (centro_x, centro_y), 15, 2)
+        # Desenha o agente como um círculo (com margem)
+        centro_x = margem + self.x * cell_size + cell_size // 2
+        centro_y = margem + self.y * cell_size + cell_size // 2
+        
+        # Sombra do agente
+        pygame.draw.circle(tela, (100, 100, 100), (centro_x + 2, centro_y + 2), raio_agente)
+        
+        # Corpo do agente
+        pygame.draw.circle(tela, cor, (centro_x, centro_y), raio_agente)
+        
+        # Borda branca para destaque
+        pygame.draw.circle(tela, (230, 230, 230), (centro_x, centro_y), raio_agente, 3)
         
         # Desenha a letra identificadora
-        fonte = pygame.font.SysFont("arial", 12, bold=True)
+        fonte = pygame.font.SysFont("arial", tamanho_fonte, bold=True)
         texto = fonte.render(self.get_letra(), True, (255, 255, 255))
-        tela.blit(texto, (centro_x - 6, centro_y - 6))
+        tela.blit(texto, (centro_x - texto.get_width() // 2, centro_y - texto.get_height() // 2))
     
     @abstractmethod
     def get_cor(self):
