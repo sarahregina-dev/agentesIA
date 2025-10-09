@@ -18,40 +18,36 @@ class BaseAgent(ABC):
         self.executando = True
         self.historico_posicoes = [(x, y)]
         
-        # Inicia o processo do agente
+     
         self.ambiente.process(self.executar())
     
     def executar(self):
-        """Processo principal do agente"""
+     
         while self.executando and self.bateria > 0:
-            # Executa a lógica específica do agente
+        
             self.agir()
-            
-            # Consome bateria
-            # self.bateria -= 1
-            
-            # Timeout para próxima ação
+         
             yield self.ambiente.timeout(1)
     
     def parar(self):
-        """Para o agente e encerra sua execução"""
+       
         self.executando = False
         print(f"Agente {self.nome} foi parado por falta de ações")
             
     
     @abstractmethod
     def agir(self):
-        """Método abstrato que cada agente deve implementar"""
+   
         pass
     
     def mover(self, dx, dy):
-        """Move o agente para uma nova posição"""
+      
         novo_x = self.x + dx
         novo_y = self.y + dy
         
-        # Verifica limites do grid
+      
         if 0 <= novo_x < 5 and 0 <= novo_y < 5:
-            # Verifica se não há obstáculo
+         
             if (novo_x, novo_y) not in self.obstacles:
                 self.x = novo_x
                 self.y = novo_y
@@ -61,7 +57,7 @@ class BaseAgent(ABC):
         return False
     
     def aspirar(self, model_grid = None):
-        """Aspira a sujeira na posição atual"""
+      
         if self.grid[self.y][self.x] > 0:
             if self.bateria > 2:
                 valor_sujeira = self.grid[self.y][self.x]
@@ -74,51 +70,48 @@ class BaseAgent(ABC):
         return False
     
     def desenhar(self, tela, margem=0):
-        """Desenha o agente na tela"""
+      
         import constantes
         
-        # Determina a cor do agente
+   
         cor = self.get_cor()
         
-        # Calcula tamanhos proporcionais ao tamanho da célula
+    
         cell_size = constantes.CELL_SIZE
         raio_agente = int(cell_size * 0.20)
         tamanho_fonte = int(cell_size * 0.20)
         
-        # Desenha o agente como um círculo (com margem)
+    
         centro_x = margem + self.x * cell_size + cell_size // 2
         centro_y = margem + self.y * cell_size + cell_size // 2
         
-        # Sombra do agente
+    
         pygame.draw.circle(tela, (100, 100, 100), (centro_x + 2, centro_y + 2), raio_agente)
         
-        # Corpo do agente
+     
         pygame.draw.circle(tela, cor, (centro_x, centro_y), raio_agente)
         
-        # Borda branca para destaque
+    
         pygame.draw.circle(tela, (230, 230, 230), (centro_x, centro_y), raio_agente, 3)
         
-        # Desenha a letra identificadora
+     
         fonte = pygame.font.SysFont("arial", tamanho_fonte, bold=True)
         texto = fonte.render(self.get_letra(), True, (255, 255, 255))
         tela.blit(texto, (centro_x - texto.get_width() // 2, centro_y - texto.get_height() // 2))
     
     @abstractmethod
     def get_cor(self):
-        """Retorna a cor do agente"""
+        
         pass
     
     @abstractmethod
     def get_letra(self):
-        """Retorna a letra identificadora do agente"""
         pass
     
     def distancia(self, x1, y1, x2, y2):
-        """Calcula distância absoluta (Manhattan) entre duas posições"""
         return abs(x1 - x2) + abs(y1 - y2)
     
     def encontrar_sujeira_mais_proxima(self):
-        """Encontra a sujeira mais próxima"""
         sujeiras = []
         for y in range(5):
             for x in range(5):
@@ -127,22 +120,20 @@ class BaseAgent(ABC):
                     sujeiras.append((x, y, self.grid[y][x], distancia))
         
         if sujeiras:
-            # Ordena por distância
             sujeiras.sort(key=lambda s: s[3])
            
             return sujeiras[0]
         return None
     
     def caminho_para_posicao(self, x_destino, y_destino):
-        """Calcula um caminho simples para uma posição"""
-        # Movimento simples: primeiro horizontal, depois vertical
+     
         if self.x < x_destino:
-            return (1, 0)  # Direita
+            return (1, 0) 
         elif self.x > x_destino:
-            return (-1, 0)  # Esquerda
+            return (-1, 0) 
         elif self.y < y_destino:
-            return (0, 1)  # Baixo
+            return (0, 1)
         elif self.y > y_destino:
-            return (0, -1)  # Cima
+            return (0, -1) 
         else:
-            return (0, 0)  # Já está na posição
+            return (0, 0)  

@@ -136,8 +136,12 @@ def mostrar_historico(tela):
             texto = fonte_texto.render("Nenhuma simulação realizada ainda", True, (200, 200, 200))
             tela.blit(texto, (constantes.WINDOW_WIDTH // 2 - texto.get_width() // 2, 200))
         else:
+            # Define área visível (entre título e botões)
+            area_topo = 70  # Abaixo do título
+            area_fundo = constantes.WINDOW_HEIGHT - 100  # Acima dos botões
+            
             # Área de scroll
-            y_pos = 70 - scroll_offset
+            y_pos = area_topo - scroll_offset
             
             # Calcula estatísticas gerais
             stats_por_agente = {}
@@ -150,10 +154,11 @@ def mostrar_historico(tela):
                     stats_por_agente[nome]['simulacoes'] += 1
                     
             
-            # Mostra estatísticas gerais
+            # Mostra estatísticas gerais (só se estiver visível)
             fonte_secao = pygame.font.SysFont("arial", 20, bold=True)
             texto = fonte_secao.render("=== ESTATÍSTICAS GERAIS ===", True, (255, 255, 100))
-            tela.blit(texto, (30, y_pos))
+            if area_topo <= y_pos <= area_fundo:
+                tela.blit(texto, (30, y_pos))
             y_pos += 35
             
             for nome, stats in sorted(stats_por_agente.items(), key=lambda x: x[1]['total_pontos'], reverse=True):
@@ -163,25 +168,28 @@ def mostrar_historico(tela):
                     f"{nome}: {stats['simulacoes']} simulações | Média: {media:.1f} pts",
                     True, (200, 255, 200)
                 )
-                tela.blit(texto, (50, y_pos))
+                if area_topo <= y_pos <= area_fundo:
+                    tela.blit(texto, (50, y_pos))
                 y_pos += 28
             
             y_pos += 25
             
             # Lista simulações individuais
             texto = fonte_secao.render("=== SIMULAÇÕES INDIVIDUAIS ===", True, (255, 255, 100))
-            tela.blit(texto, (30, y_pos))
+            if area_topo <= y_pos <= area_fundo:
+                tela.blit(texto, (30, y_pos))
             y_pos += 35
             
             for i, sim in enumerate(reversed(historico_simulacoes)):
                 # Cabeçalho da simulação
-                pygame.draw.rect(tela, (60, 60, 90), (20, y_pos, 760, 35))
-                fonte_sim = pygame.font.SysFont("arial", 17, bold=True)
-                texto = fonte_sim.render(
-                    f"Simulação #{len(historico_simulacoes) - i} - {sim['timestamp']}",
-                    True, (255, 255, 255)
-                )
-                tela.blit(texto, (30, y_pos + 8))
+                if area_topo - 35 <= y_pos <= area_fundo:
+                    pygame.draw.rect(tela, (60, 60, 90), (20, y_pos, 760, 35))
+                    fonte_sim = pygame.font.SysFont("arial", 17, bold=True)
+                    texto = fonte_sim.render(
+                        f"Simulação #{len(historico_simulacoes) - i} - {sim['timestamp']}",
+                        True, (255, 255, 255)
+                    )
+                    tela.blit(texto, (30, y_pos + 8))
                 y_pos += 40
                 
                 # Resultados dos agentes
@@ -192,12 +200,13 @@ def mostrar_historico(tela):
                         f"{simbolo}{resultado['nome']}: {resultado['pontuacao']} pts (Bateria: {resultado['bateria']})",
                         True, cor
                     )
-                    tela.blit(texto, (50, y_pos))
+                    if area_topo <= y_pos <= area_fundo:
+                        tela.blit(texto, (50, y_pos))
                     y_pos += 26
                 
                 y_pos += 12
             
-            max_scroll = max(0, y_pos - (constantes.WINDOW_HEIGHT - 150))
+            max_scroll = max(0, y_pos - area_fundo)
         
         # Botões
         mouse_pos = pygame.mouse.get_pos()
@@ -570,7 +579,7 @@ def executar_simulacao(tela, tipo_agente, grid, obstacles):
             'resultados': resultados
         })
         
-        print(f"\n📊 Simulação salva no histórico ({len(historico_simulacoes)} total)")
+        print(f"\n Simulação salva no histórico ({len(historico_simulacoes)} total)")
     
     return agentes
 
@@ -601,12 +610,12 @@ def main():
             if escolha == "novo_mapa":
                 # Gera novo ambiente
                 grid_original, obstacles_original = gerar_ambiente()
-                print("\n🗺️  Novo mapa gerado!\n")
+                print("\n  Novo mapa gerado!\n")
             elif escolha == "sair":
-                print("\n👋 Encerrando simulador...\n")
+                print("\n Encerrando simulador...\n")
                 continuar = False
             else:
-                print("\n🗺️  Usando o mesmo mapa\n")
+                print("\n  Usando o mesmo mapa\n")
     
     pygame.quit()
 

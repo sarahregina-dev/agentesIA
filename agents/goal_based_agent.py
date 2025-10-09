@@ -6,29 +6,29 @@ class GoalBasedAgent(BaseAgent):
     
     def __init__(self, nome, ambiente, x, y, grid, obstacles):
         super().__init__(nome, ambiente, x, y, grid, obstacles)
-        # Modelo interno do ambiente
+
         self.modelo_grid = [[0 for _ in range(5)] for _ in range(5)]
         self.modelo_obstacles = []
         self.obstacles = obstacles
         self.ultima_acao = None
-        # Rastreamento de casas visitadas
+      
         self.casas_visitadas = set()
-        self.casas_visitadas.add((x, y))  # Marca posição inicial como visitada
+        self.casas_visitadas.add((x, y))  
     
     def agir(self):
-        """Lógica do agente baseado em modelo com priorização de casas não visitadas"""
-        # Atualiza modelo com informações da posição atual
+      
+       
         self.atualizar_modelo()
         
-        # Marca posição atual como visitada
+      
         self.casas_visitadas.add((self.x, self.y))
         
-        # Primeiro tenta aspirar na posição atual
+       
         if self.aspirar():
             self.ultima_acao = "aspirar"
             return
         
-        # Procura sujeira no modelo local
+       
         sujeira_proxima = self.encontrar_sujeira_mais_proxima()
         if sujeira_proxima:
             x_dest, y_dest, _, _ = sujeira_proxima
@@ -37,7 +37,7 @@ class GoalBasedAgent(BaseAgent):
                 self.ultima_acao = "mover_para_sujeira"
                 return
         
-        # Prioriza casas não visitadas
+       
         casa_nao_visitada = self.encontrar_casa_nao_visitada()
         if casa_nao_visitada:
             x_dest, y_dest = casa_nao_visitada
@@ -46,7 +46,7 @@ class GoalBasedAgent(BaseAgent):
                 self.ultima_acao = "explorar_nao_visitada"
                 return
         
-        # Se não encontrou casa não visitada, move aleatoriamente
+       
         movimentos = [(0, 1), (0, -1), (1, 0), (-1, 0)]
         dx, dy = random.choice(movimentos)
         
@@ -56,11 +56,11 @@ class GoalBasedAgent(BaseAgent):
     
     def atualizar_modelo(self):
         """Atualiza o modelo interno com informações atuais"""
-        # Atualiza a posição atual no modelo
+
         self.modelo_grid[self.y][self.x] = self.grid[self.y][self.x]
         
-        # Observa apenas as 4 casas imediatamente próximas (norte, sul, leste, oeste)
-        movimentos_vizinhos = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # norte, sul, leste, oeste
+      
+        movimentos_vizinhos = [(0, 1), (0, -1), (1, 0), (-1, 0)]  
         for dx, dy in movimentos_vizinhos:
             novo_x = self.x + dx
             novo_y = self.y + dy
@@ -70,7 +70,7 @@ class GoalBasedAgent(BaseAgent):
                 self.modelo_grid[novo_y][novo_x] = self.grid[novo_y][novo_x]
     
     def encontrar_sujeira_mais_proxima(self):
-        """Encontra a sujeira mais próxima no modelo_grid (todo o grid conhecido pelo agente)"""
+      
         sujeiras = []
         for y in range(5):
             for x in range(5):
@@ -78,7 +78,6 @@ class GoalBasedAgent(BaseAgent):
                     distancia = self.distancia(self.x, self.y, x, y)
                     sujeiras.append((x, y, self.modelo_grid[y][x], distancia))
         if sujeiras:
-            sujeiras.sort(key=lambda s: s[3])
             if len(sujeiras) > 1:
                 sujeiras.sort(key=lambda s: s[2], reverse=True)
                 return sujeiras[0]
@@ -86,10 +85,10 @@ class GoalBasedAgent(BaseAgent):
         return None
     
     def encontrar_casa_nao_visitada(self):
-        """Encontra a casa não visitada mais próxima"""
+       
         casas_nao_visitadas = []
         
-        # Procura em todo o grid por casas não visitadas
+      
         for y in range(5):
             for x in range(5):
                 if (x, y) not in self.casas_visitadas and (x, y) not in self.modelo_obstacles:
@@ -97,7 +96,7 @@ class GoalBasedAgent(BaseAgent):
                     casas_nao_visitadas.append((x, y, distancia))
         
         if casas_nao_visitadas:
-            # Ordena por distância (mais próxima primeiro)
+           
             casas_nao_visitadas.sort(key=lambda casa: casa[2])
             return (casas_nao_visitadas[0][0], casas_nao_visitadas[0][1])
         
@@ -105,7 +104,7 @@ class GoalBasedAgent(BaseAgent):
     
     
     def get_cor(self):
-        return (255, 165, 0)  # Laranja
+        return (255, 165, 0)  
     
     def get_letra(self):
         return "G"
